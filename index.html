@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="ko" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Vibe Studio | 스페셜티 커피 브루잉 물리·화학 랩</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        espresso: {
+                            950: '#0c0705', 900: '#150d09', 850: '#1c110c', 800: '#271710',
+                            750: '#341f16', 700: '#43291d', 600: '#5c3828', 500: '#7a4b36',
+                            400: '#9b6349', 300: '#be866d', 200: '#ddb3a0', 100: '#f1ddd4', 50: '#faede7',
+                        },
+                        crema: { 500: '#f59e0b', 400: '#fbbf24', 300: '#fcd34d', 200: '#fde68a', 100: '#fef3c7' },
+                        latte: { 50: '#fdfbf9', 100: '#fbf7f2', 200: '#f6eee4', 300: '#eee0d1', 400: '#dfcbb7', 500: '#caaea0' }
+                    },
+                    fontFamily: {
+                        sans: ['"Pretendard Variable"', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- KaTeX CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    <link rel="stylesheet" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+
+    <style>
+        :root {
+            --bg-color: #fbf7f2;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --card-border: rgba(214, 189, 166, 0.7);
+            --card-shadow: 0 16px 36px -8px rgba(92, 56, 40, 0.08);
+            --inset-bg: rgba(248, 241, 233, 0.85);
+            --inset-border: rgba(226, 206, 188, 0.85);
+            --slider-track: #dfcbb7;
+        }
+        html.dark {
+            --bg-color: #0c0705;
+            --card-bg: rgba(21, 13, 9, 0.84);
+            --card-border: rgba(72, 44, 31, 0.65);
+            --card-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.65);
+            --inset-bg: rgba(12, 7, 5, 0.78);
+            --inset-border: rgba(54, 33, 23, 0.75);
+            --slider-track: #271710;
+        }
+        body {
+            font-family: "Pretendard Variable", Pretendard, sans-serif;
+            background-color: var(--bg-color);
+            word-break: keep-all;
+        }
+        .coffee-card { background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: var(--card-shadow); backdrop-filter: blur(14px); }
+        .coffee-inset { background: var(--inset-bg); border: 1px solid var(--inset-border); }
+        input[type="range"] { -webkit-appearance: none; appearance: none; background: var(--slider-track); border-radius: 9999px; }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; appearance: none; width: 15px; height: 15px; border-radius: 50%;
+            background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%); cursor: pointer; border: 1.5px solid #fff;
+        }
+    </style>
+</head>
+<body class="text-espresso-900 dark:text-espresso-100 min-h-screen flex flex-col antialiased">
+
+    <!-- Header -->
+    <header class="border-b border-latte-300 dark:border-espresso-800/80 bg-latte-50/90 dark:bg-espresso-950/85 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-[1420px] mx-auto px-4 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-3.5">
+                <div class="p-3 bg-gradient-to-br from-crema-500 to-espresso-800 rounded-2xl flex items-center justify-center">
+                    <i data-lucide="coffee" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="flex items-center gap-2">
+                        <span class="font-bold text-2xl text-amber-800 dark:text-crema-300">Coffee Vibe</span>
+                        <span class="font-extrabold text-2xl text-espresso-950 dark:text-crema-100">Studio</span>
+                    </h1>
+                    <p class="text-xs text-espresso-600 dark:text-espresso-300">스페셜티 커피 브루잉 물리·화학 추출 시뮬레이터</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <div class="hidden lg:flex items-center bg-latte-200/80 dark:bg-espresso-900/90 p-1 rounded-2xl border border-latte-300 dark:border-espresso-750 text-xs">
+                    <span class="px-2.5 font-semibold text-espresso-600 dark:text-espresso-300">레시피:</span>
+                    <button onclick="applyPreset('v60')" class="preset-btn px-3 py-1.5 rounded-xl font-medium" id="preset-btn-v60">핸드드립(V60)</button>
+                    <button onclick="applyPreset('espresso')" class="preset-btn px-3 py-1.5 rounded-xl font-medium" id="preset-btn-espresso">에스프레소</button>
+                    <button onclick="applyPreset('frenchpress')" class="preset-btn px-3 py-1.5 rounded-xl font-medium" id="preset-btn-frenchpress">프렌치 프레스</button>
+                    <button onclick="applyPreset('coldbrew')" class="preset-btn px-3 py-1.5 rounded-xl font-medium" id="preset-btn-coldbrew">콜드브루 (12h)</button>
+                </div>
+
+                <button onclick="toggleTheme()" class="p-2 bg-latte-200 dark:bg-espresso-850 rounded-xl hover:opacity-80 transition" title="테마 변경">
+                    <i id="themeIcon" data-lucide="sun" class="w-4 h-4"></i>
+                </button>
+                <button onclick="exportReport()" class="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition">랩 리포트</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-[1420px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- CONTROLS SIDEBAR (4 Cols) -->
+        <section class="lg:col-span-4 flex flex-col gap-5">
+            <div class="coffee-card rounded-3xl p-5 flex flex-col gap-5">
+                <div class="flex items-center justify-between border-b border-latte-300 dark:border-espresso-750 pb-3">
+                    <h2 class="font-bold text-sm flex items-center gap-2">
+                        <i data-lucide="sliders" class="w-4 h-4 text-amber-600"></i> 브루잉 제어판
+                    </h2>
+                    <button onclick="resetControls()" class="text-xs text-espresso-600 dark:text-espresso-300 hover:text-amber-600 flex items-center gap-1 transition">
+                        <i data-lucide="rotate-ccw" class="w-3 h-3"></i> 초기화
+                    </button>
+                </div>
+
+                <!-- Timer -->
+                <div class="coffee-inset p-4 rounded-2xl flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="font-semibold flex items-center gap-1.5">
+                            <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-600"></i> 추출 경과 시간 (<span id="timeUnitSymbol">t</span>)
+                        </span>
+                        <span id="timeVal" class="font-mono text-amber-800 dark:text-crema-400 font-bold bg-latte-100 dark:bg-espresso-950 px-2 py-0.5 rounded">120s / 180s</span>
+                    </div>
+                    <div class="flex items-center gap-3 pt-1">
+                        <button id="playBtn" onclick="togglePlay()" class="p-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl transition">
+                            <i id="playIcon" data-lucide="play" class="w-4 h-4 fill-current"></i>
+                        </button>
+                        <input type="range" id="timeSlider" min="0" max="180" value="120" step="1" oninput="updateSim()" class="w-full h-2">
+                    </div>
+                    <p id="timeUnitNote" class="text-xs text-amber-800 dark:text-crema-400 font-medium"></p>
+                </div>
+
+                <!-- Selects -->
+                <div class="grid grid-cols-2 gap-2.5 text-xs">
+                    <div>
+                        <label class="font-semibold block mb-1">추출 방식</label>
+                        <select id="methodInput" onchange="onMethodChange()" class="w-full coffee-inset rounded-xl p-2.5 outline-none">
+                            <option value="percolation" selected>여과식 (Percolation)</option>
+                            <option value="immersion">침출식 (Immersion)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="font-semibold block mb-1">필터 종류</label>
+                        <select id="filterInput" onchange="updateSim()" class="w-full coffee-inset rounded-xl p-2.5 outline-none">
+                            <option value="paper" selected>종이 (오일 흡착)</option>
+                            <option value="cloth">융/클로스 (실키 바디)</option>
+                            <option value="metal">메탈 메쉬 (오일 풍부)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="text-xs">
+                    <label class="font-semibold block mb-1">원두 프로필</label>
+                    <select id="originInput" onchange="updateSim()" class="w-full coffee-inset rounded-xl p-2.5 outline-none">
+                        <option value="ethiopia" selected>에티오피아 예가체프 (화사한 산미)</option>
+                        <option value="colombia">콜롬비아 수프레모 (밸런스)</option>
+                        <option value="sumatra">수마트라 만델링 (묵직한 바디)</option>
+                    </select>
+                </div>
+
+                <!-- Sliders -->
+                <div class="space-y-3 text-xs">
+                    <div class="coffee-inset p-3 rounded-2xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold">분쇄도 입경 ($d_p$)</span>
+                            <span id="grindVal" class="font-mono text-amber-900 dark:text-crema-400 font-bold">500 µm</span>
+                        </div>
+                        <input type="range" id="grindInput" min="150" max="1000" value="500" step="10" oninput="updateSim()" class="w-full h-1.5">
+                    </div>
+
+                    <div class="coffee-inset p-3 rounded-2xl">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="font-semibold">추출 수온 ($T$)</span>
+                            <span id="tempVal" class="font-mono text-amber-900 dark:text-crema-400 font-bold">93.0 °C</span>
+                        </div>
+                        <input type="range" id="tempInput" min="4" max="99" value="93" step="0.5" oninput="updateSim()" class="w-full h-1.5">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div class="coffee-inset p-3 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold">원두량</span>
+                                <span id="doseVal" class="font-mono font-bold">20.0g</span>
+                            </div>
+                            <input type="range" id="doseInput" min="7" max="60" value="20" step="0.5" oninput="updateSim()" class="w-full h-1.5">
+                        </div>
+                        <div class="coffee-inset p-3 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold">물량</span>
+                                <span id="waterVal" class="font-mono font-bold">300mL</span>
+                            </div>
+                            <input type="range" id="waterInput" min="30" max="600" value="300" step="5" oninput="updateSim()" class="w-full h-1.5">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2.5">
+                        <div class="coffee-inset p-3 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold">차압 ($\Delta P$)</span>
+                                <span id="pressureVal" class="font-mono font-bold">0.005 bar</span>
+                            </div>
+                            <input type="range" id="pressureInput" min="0.002" max="10.0" value="0.005" step="0.005" oninput="updateSim()" class="w-full h-1.5">
+                        </div>
+                        <div class="coffee-inset p-3 rounded-2xl">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="font-semibold">수질 (PPM)</span>
+                                <span id="ppmVal" class="font-mono font-bold">150 ppm</span>
+                            </div>
+                            <input type="range" id="ppmInput" min="20" max="350" value="150" step="10" oninput="updateSim()" class="w-full h-1.5">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recipe Book -->
+            <div class="coffee-card rounded-3xl p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-xs font-bold flex items-center gap-1.5">
+                        <i data-lucide="bookmark" class="w-3.5 h-3.5 text-amber-600"></i> 레시피 북
+                    </h3>
+                    <button onclick="saveRecipe()" class="text-xs bg-latte-200 dark:bg-espresso-750 hover:bg-amber-600 hover:text-white px-3 py-1 rounded-xl font-semibold transition">저장</button>
+                </div>
+                <div id="recipeList" class="space-y-2 max-h-36 overflow-y-auto text-xs"></div>
+            </div>
+        </section>
+
+        <!-- MAIN DASHBOARD (8 Cols) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- Top Row: Equipment Canvas + Diagnostic Banner -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+                <!-- Dynamic Equipment Canvas (7 Cols) -->
+                <div class="md:col-span-7 coffee-card rounded-3xl p-5 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-3">
+                        <span class="text-xs font-bold flex items-center gap-2">
+                            <i data-lucide="layers" class="w-4 h-4 text-amber-600"></i> 추출 유체 역학 일러스트
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span id="brewingModeBadge" class="text-xs font-mono px-2.5 py-0.5 rounded-full bg-latte-200 dark:bg-espresso-950 font-medium">여과식</span>
+                            <span id="flowRateBadge" class="text-xs font-mono bg-amber-100 dark:bg-espresso-900 text-amber-900 dark:text-crema-300 px-2.5 py-0.5 rounded-full font-bold">Q = 0.00 mL/s</span>
+                        </div>
+                    </div>
+
+                    <div class="relative w-full flex-1 min-h-[224px] rounded-2xl border border-latte-300 dark:border-espresso-800 overflow-hidden bg-[#f5ece2] dark:bg-[#0f0907]" id="canvasContainer">
+                        <canvas id="flowCanvas" class="w-full h-full block"></canvas>
+                        <div class="absolute bottom-2.5 left-2.5 bg-white/95 dark:bg-espresso-900/90 px-3 py-1 rounded-xl text-xs font-mono border border-latte-300 dark:border-espresso-700 flex items-center gap-3">
+                            <span>점도 $\mu$: <strong id="viscVal" class="text-amber-800 dark:text-amber-300">0.89 mPa·s</strong></span>
+                            <span>수확량: <strong id="beverageVolVal" class="text-amber-900 dark:text-crema-400">0 mL</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SCA Golden Cup Diagnostic Card (5 Cols) -->
+                <div class="md:col-span-5 coffee-card rounded-3xl p-5 flex flex-col justify-between h-full">
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold flex items-center gap-1.5">
+                                <i data-lucide="award" class="w-4 h-4 text-amber-600"></i> SCA 골든 컵 랩 진단
+                            </span>
+                            <span id="scaBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-crema-500/20 text-amber-900 dark:text-crema-300 border border-amber-300 dark:border-crema-500/40">
+                                진단 중...
+                            </span>
+                        </div>
+
+                        <!-- Metrics Grid -->
+                        <div class="grid grid-cols-2 gap-2.5 mb-3">
+                            <div class="coffee-inset p-3.5 rounded-2xl">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs font-semibold">추출 수율 (EY)</p>
+                                    <span id="eyTargetHint" class="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-bold">18 ~ 22%</span>
+                                </div>
+                                <p id="eyMetric" class="text-2xl font-bold font-mono mt-1 text-amber-700 dark:text-crema-300">0.00%</p>
+                            </div>
+                            <div class="coffee-inset p-3.5 rounded-2xl">
+                                <div class="flex justify-between items-center">
+                                    <p class="text-xs font-semibold">농도 (TDS)</p>
+                                    <span id="tdsTargetHint" class="text-xs text-emerald-700 dark:text-emerald-400 font-mono font-bold">1.15 ~ 1.45%</span>
+                                </div>
+                                <p id="tdsMetric" class="text-2xl font-bold font-mono mt-1 text-amber-700 dark:text-crema-300">0.00%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 대응방안 진단 가이드 출력 영역 -->
+                    <div id="aiTutorTip" class="bg-latte-200/90 dark:bg-espresso-950 border border-latte-300 dark:border-amber-700/35 rounded-2xl p-3.5 text-xs flex flex-col gap-1.5 leading-relaxed">
+                        <p class="text-xs font-medium text-amber-900 dark:text-crema-200" id="tutorTitle">물리화학 추출 분석</p>
+                        <p class="text-xs text-espresso-600 dark:text-espresso-300" id="tutorDesc">슬라이더를 조작하여 추출을 시작해보세요.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 스크립트: 시뮬레이터 물리 엔진 및 인터랙션 로직 -->
+    <script>
+        let isPlaying = false;
+        let timerInterval = null;
+        let currentMode = 'seconds'; // 'seconds' or 'hours'
+
+        // 1. 테마 토글
+        function toggleTheme() {
+            const html = document.documentElement;
+            html.classList.toggle('dark');
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                icon.setAttribute('data-lucide', 'sun');
+            } else {
+                icon.setAttribute('data-lucide', 'moon');
+            }
+            lucide.createIcons();
+        }
+
+        // 2. 프리셋 적용
+        function applyPreset(type) {
+            const grind = document.getElementById('grindInput');
+            const temp = document.getElementById('tempInput');
+            const dose = document.getElementById('doseInput');
+            const water = document.getElementById('waterInput');
+            const pressure = document.getElementById('pressureInput');
+            const method = document.getElementById('methodInput');
+
+            if (type === 'v60') {
+                method.value = 'percolation';
+                grind.value = 500;
+                temp.value = 93;
+                dose.value = 20;
+                water.value = 300;
+                pressure.value = 0.005;
+                setTimeRange(180, 120, 's');
+            } else if (type === 'espresso') {
+                method.value = 'percolation';
+                grind.value = 200;
+                temp.value = 93.5;
+                dose.value = 18;
+                water.value = 40;
+                pressure.value = 9.0;
+                setTimeRange(40, 28, 's');
+            } else if (type === 'frenchpress') {
+                method.value = 'immersion';
+                grind.value = 850;
+                temp.value = 94;
+                dose.value = 25;
+                water.value = 375;
+                pressure.value = 0.002;
+                setTimeRange(300, 240, 's');
+            } else if (type === 'coldbrew') {
+                method.value = 'immersion';
+                grind.value = 900;
+                temp.value = 15;
+                dose.value = 50;
+                water.value = 500;
+                pressure.value = 0.002;
+                setTimeRange(24, 12, 'h');
+            }
+            onMethodChange();
+            updateSim();
+        }
+
+        function setTimeRange(max, current, unit) {
+            currentMode = unit === 'h' ? 'hours' : 'seconds';
+            const slider = document.getElementById('timeSlider');
+            slider.max = max;
+            slider.value = current;
+            document.getElementById('timeUnitSymbol').textContent = unit;
+        }
+
+        function onMethodChange() {
+            const method = document.getElementById('methodInput').value;
+            const badge = document.getElementById('brewingModeBadge');
+            badge.textContent = method === 'percolation' ? '여과식 (Percolation)' : '침출식 (Immersion)';
+            updateSim();
+        }
+
+        // 3. 타이머 제어
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            const playIcon = document.getElementById('playIcon');
+            if (isPlaying) {
+                playIcon.setAttribute('data-lucide', 'pause');
+                timerInterval = setInterval(() => {
+                    const slider = document.getElementById('timeSlider');
+                    let val = parseFloat(slider.value) + 1;
+                    if (val > parseFloat(slider.max)) {
+                        togglePlay();
+                        return;
+                    }
+                    slider.value = val;
+                    updateSim();
+                }, 1000);
+            } else {
+                playIcon.setAttribute('data-lucide', 'play');
+                clearInterval(timerInterval);
+            }
+            lucide.createIcons();
+        }
+
+        function resetControls() {
+            if (isPlaying) togglePlay();
+            applyPreset('v60');
+        }
+
+        // 4. 물리·화학 추출 시뮬레이션 계산 엔진
+        function updateSim() {
+            const grind = parseFloat(document.getElementById('grindInput').value); // um
+            const temp = parseFloat(document.getElementById('tempInput').value);   // °C
+            const dose = parseFloat(document.getElementById('doseInput').value);   // g
+            const water = parseFloat(document.getElementById('waterInput').value); // mL
+            const pressure = parseFloat(document.getElementById('pressureInput').value); // bar
+            const time = parseFloat(document.getElementById('timeSlider').value);
+            const method = document.getElementById('methodInput').value;
+            const unit = currentMode === 'hours' ? 'h' : 's';
+
+            // 레이블 업데이트
+            document.getElementById('grindVal').textContent = `${grind} µm`;
+            document.getElementById('tempVal').textContent = `${temp.toFixed(1)} °C`;
+            document.getElementById('doseVal').textContent = `${dose.toFixed(1)}g`;
+            document.getElementById('waterVal').textContent = `${water}mL`;
+            document.getElementById('pressureVal').textContent = `${pressure.toFixed(3)} bar`;
+            document.getElementById('timeVal').textContent = `${time}${unit} / ${document.getElementById('timeSlider').max}${unit}`;
+
+            // 물리 모델: 물의 점도 mu (mPa·s, Vogel 식 근사)
+            const visc = 2.414 * Math.pow(10, 247.8 / (temp + 273.15 - 140)) / 1000;
+            document.getElementById('viscVal').textContent = `${visc.toFixed(2)} mPa·s`;
+
+            // 유량 계산 (Darcy 법칙 응용)
+            let flowRate = 0;
+            if (method === 'percolation') {
+                flowRate = (pressure * 1000 * Math.pow(grind / 500, 1.8)) / (visc * 15);
+                flowRate = Math.min(Math.max(flowRate, 0.1), 15.0);
+            }
+            document.getElementById('flowRateBadge').textContent = `Q = ${flowRate.toFixed(2)} mL/s`;
+
+            // 추출액 수확량 (음용량 = 주입량 - 원두 흡수량 약 2배)
+            const retention = method === 'percolation' ? dose * 2.0 : dose * 1.5;
+            const beverageVol = Math.max(0, water - retention);
+            document.getElementById('beverageVolVal').textContent = `${beverageVol.toFixed(0)} mL`;
+
+            // 용출 속도 모델 (수온, 분쇄도, 시간 기반)
+            const effectiveTimeSec = currentMode === 'hours' ? time * 3600 : time;
+            const rateK = (Math.sqrt(temp) / grind) * (method === 'percolation' ? 1.4 : 0.9);
+            const maxYield = 27.0; // 원두 최대 가용성분 ~28%
+            const ey = maxYield * (1 - Math.exp(-rateK * Math.sqrt(effectiveTimeSec) * 0.45));
+            const tds = beverageVol > 0 ? (dose * (ey / 100) / beverageVol) * 100 : 0;
+
+            document.getElementById('eyMetric').textContent = `${ey.toFixed(2)}%`;
+            document.getElementById('tdsMetric').textContent = `${tds.toFixed(2)}%`;
+
+            // SCA 골든 컵 판정
+            const scaBadge = document.getElementById('scaBadge');
+            const tutorTitle = document.getElementById('tutorTitle');
+            const tutorDesc = document.getElementById('tutorDesc');
+
+            if (ey >= 18 && ey <= 22 && tds >= 1.15 && tds <= 1.45) {
+                scaBadge.textContent = '골든 컵 적정 (Ideal)';
+                scaBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border border-emerald-400';
+                tutorTitle.textContent = '✨ 완벽한 균형의 브루잉';
+                tutorDesc.textContent = '단맛, 산미, 바디감이 완벽한 밸런스를 이루고 있습니다.';
+            } else if (ey < 18) {
+                scaBadge.textContent = '과소 추출 (Under-Extracted)';
+                scaBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border border-amber-400';
+                tutorTitle.textContent = '⚠️ 산미가 튀고 떫은 맛 가능성';
+                tutorDesc.textContent = '분쇄도를 더 곱게 조정하거나 수온을 1~2°C 높여 추출 수율을 올려보세요.';
+            } else {
+                scaBadge.textContent = '과다 추출 (Over-Extracted)';
+                scaBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-800 dark:text-rose-300 border border-rose-400';
+                tutorTitle.textContent = '⚠️ 쓴맛과 거친 뒷맛 발생';
+                tutorDesc.textContent = '추출 시간을 줄이거나 분쇄도를 굵게 하여 잡미 성분 용출을 억제하세요.';
+            }
+        }
+
+        // 5. 캔버스 물방울/흐름 애니메이션
+        const canvas = document.getElementById('flowCanvas');
+        const ctx = canvas.getContext('2d');
+        let droplets = [];
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function drawCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const isDark = document.documentElement.classList.contains('dark');
+
+            // 드리퍼 외곽선 그리기
+            ctx.strokeStyle = isDark ? '#5c3828' : '#caaea0';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx - 70, 30);
+            ctx.lineTo(cx + 70, 30);
+            ctx.lineTo(cx + 15, 120);
+            ctx.lineTo(cx - 15, 120);
+            ctx.closePath();
+            ctx.stroke();
+
+            // 커피 베드 채우기
+            ctx.fillStyle = isDark ? '#271710' : '#7a4b36';
+            ctx.beginPath();
+            ctx.moveTo(cx - 50, 60);
+            ctx.lineTo(cx + 50, 60);
+            ctx.lineTo(cx + 15, 115);
+            ctx.lineTo(cx - 15, 115);
+            ctx.closePath();
+            ctx.fill();
+
+            // 물방울 애니메이션
+            if (Math.random() < 0.3) {
+                droplets.push({ x: cx, y: 125, vy: 2 + Math.random() * 2 });
+            }
+
+            ctx.fillStyle = isDark ? '#fbbf24' : '#9b6349';
+            for (let i = droplets.length - 1; i >= 0; i--) {
+                const d = droplets[i];
+                d.y += d.vy;
+                ctx.beginPath();
+                ctx.arc(d.x, d.y, 2.5, 0, Math.PI * 2);
+                ctx.fill();
+                if (d.y > canvas.height - 20) {
+                    droplets.splice(i, 1);
+                }
+            }
+
+            requestAnimationFrame(drawCanvas);
+        }
+
+        function saveRecipe() {
+            const list = document.getElementById('recipeList');
+            const ey = document.getElementById('eyMetric').textContent;
+            const tds = document.getElementById('tdsMetric').textContent;
+            const item = document.createElement('div');
+            item.className = 'p-2 rounded-xl coffee-inset flex justify-between items-center';
+            item.innerHTML = `<span>레시피 #${list.children.length + 1}</span><span class="font-mono text-amber-700 dark:text-crema-300">EY: ${ey} / TDS: ${tds}</span>`;
+            list.prepend(item);
+        }
+
+        function exportReport() {
+            alert('현재 브루잉 시뮬레이션 결과가 저장되었습니다.');
+        }
+
+        // 초기화 실행
+        window.addEventListener('load', () => {
+            lucide.createIcons();
+            resizeCanvas();
+            drawCanvas();
+            updateSim();
+
+            // KaTeX 인라인 수식 렌더링 활성화
+            if (window.renderMathInElement) {
+                renderMathInElement(document.body, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            }
+        });
+    </script>
+</body>
+</html>
